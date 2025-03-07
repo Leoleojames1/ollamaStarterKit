@@ -2,7 +2,7 @@
 
 A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
 
-![ollamaStarterKit](https://placehold.co/600x400?text=ollamaQT+Toolbox)
+![ollamaStarterKit](https://placehold.co/300x200?text=ollamaStarterKit)
 
 ## Overview
 
