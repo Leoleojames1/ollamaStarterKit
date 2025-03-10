@@ -53,13 +53,13 @@ ollama pull phi3
 ollama pull granite3.2-vision
 ```
 
-you can also explore ollama to your hearts content to find the perfect model from their vast collection: ![Borch's Ollama](https://ollama.com/borch)
+you can also explore ollama to your hearts content to find the perfect model from their vast collection: [Borch's Ollama](https://ollama.com/borch)
 
 ## Tools
 
 ### Ollama 101
 
-[ollamaStarterKit](assets/ollama101_md1.png)
+![ollamaStarterKit](assets/ollama101_md1.png)
 
 A clean, user-friendly chat interface for interacting with Ollama models.
 
@@ -86,10 +86,10 @@ python ollama101.py
 ### Agent Chef (Beta)
 
 <p align="center">
-  <img src="assets/agentChefBeta_md1.png" alt="OARC LOGO" width="250"/>
+  <img src="assets/agentChefBeta_md1.png" alt="OARC LOGO" width="450"/>
 </p>
 <p align="center">
-  <img src="assets/agentChefBeta_md2.png" alt="OARC LOGO" width="250"/>
+  <img src="assets/agentChefBeta_md2.png" alt="OARC LOGO" width="450"/>
 </p>
 A specialized tool for generating AI training data from research papers on arXiv.
 
