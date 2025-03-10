@@ -2,7 +2,7 @@
 
 A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
 
-![ollamaStarterKit](https://placehold.co/300x200?text=ollamaStarterKit)
+![ollamaStarterKit](assets/ollama101_icon.png)
 
 ## Overview
 
@@ -50,7 +50,7 @@ ollama pull phi
 
 ### Ollama 101
 
-![Ollama 101](https://placehold.co/600x400?text=Ollama+101)
+![ollamaStarterKit](assets/ollama101_md1.png)
 
 A clean, user-friendly chat interface for interacting with Ollama models.
 
