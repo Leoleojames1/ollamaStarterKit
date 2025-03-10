@@ -6,8 +6,8 @@ A collection of Python GUI tools for working with Ollama models, some built with
   <img src="assets/ollama101_icon.png" alt="OARC LOGO" width="250"/>
 </p>
 <p align="center">
-  <a href="https://ko-fi.com/theborch"><img src="icons/buy me a coffee button.png" height="48"></a>
-  <a href="https://discord.gg/mNeQZzBHuW"><img src="icons/Discord button.png" height="48"></a>
+  <a href="https://ko-fi.com/theborch"><img src="assets/buy me a coffee button.png" height="48"></a>
+  <a href="https://discord.gg/mNeQZzBHuW"><img src="assets/Discord button.png" height="48"></a>
 </p>
 
 
