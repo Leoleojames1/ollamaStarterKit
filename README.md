@@ -1,7 +1,3 @@
-# ollamaStarterKit
-
-A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
-
 <p align="center">
   <img src="assets/ollama101_icon.png" alt="OARC LOGO" width="250"/>
 </p>
@@ -10,6 +6,9 @@ A collection of Python GUI tools for working with Ollama models, some built with
   <a href="https://discord.gg/mNeQZzBHuW"><img src="assets/Discord button.png" height="48"></a>
 </p>
 
+# ollamaStarterKit
+
+A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
 
 ## Overview
 
