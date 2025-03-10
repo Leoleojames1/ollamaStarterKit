@@ -30,7 +30,7 @@ Both tools feature modern, responsive interfaces with dark/light mode support an
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/yourusername/ollamaQT-toolbox.git](https://github.com/Leoleojames1/ollamaStarterKit.git)
+git clone https://github.com/Leoleojames1/ollamaStarterKit.git
 cd ollamaStarterKit
 ```
 
