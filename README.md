@@ -30,8 +30,8 @@ Both tools feature modern, responsive interfaces with dark/light mode support an
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ollamaQT-toolbox.git
-cd ollamaQT-toolbox
+git clone [https://github.com/yourusername/ollamaQT-toolbox.git](https://github.com/Leoleojames1/ollamaStarterKit.git)
+cd ollamaStarterKit
 ```
 
 2. Install the required dependencies:
@@ -46,12 +46,14 @@ ollama serve
 
 4. In a separate terminal, pull your desired Ollama models:
 ```bash
-ollama pull llama2
-# or other models like
+ollama pull llama3
+ollama pull llama3.1
 ollama pull mistral
-ollama pull phi
+ollama pull phi3
+ollama pull granite3.2-vision
 ```
 
+you can also explore ollama to your hearts content to find the perfect model from their vast collection: !(Borch's Ollama)[https://ollama.com/borch]
 ## Tools
 
 ### Ollama 101
