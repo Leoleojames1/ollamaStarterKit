@@ -2,7 +2,14 @@
 
 A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
 
-![ollamaStarterKit](assets/ollama101_icon.png)
+<p align="center">
+  <img src="assets/ollama101_icon.png" alt="OARC LOGO" width="250"/>
+</p>
+<p align="center">
+  <a href="https://ko-fi.com/theborch"><img src="icons/buy me a coffee button.png" height="48"></a>
+  <a href="https://discord.gg/mNeQZzBHuW"><img src="icons/Discord button.png" height="48"></a>
+</p>
+
 
 ## Overview
 
