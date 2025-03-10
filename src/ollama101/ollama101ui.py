@@ -1,13 +1,29 @@
-import sys
+# Add to top of file
+import pandas as pd
 import os
+from datetime import datetime
+import numpy as np
+from pathlib import Path
+import sys
 import re
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QTextEdit, 
                             QLineEdit, QPushButton, QVBoxLayout, QWidget,
                             QSplitter, QLabel, QHBoxLayout, QComboBox,
-                            QMessageBox, QTextBrowser, QCheckBox, QFileDialog)
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QColor, QPalette, QIcon, QFontDatabase
+                            QMessageBox, QTextBrowser, QCheckBox, QFileDialog,
+                            QMenu)
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
+from PyQt6.QtGui import (QFont, QColor, 
+                        QPalette, QIcon, 
+                        QFontDatabase, QDesktopServices, 
+                        QAction)
 import ollama
+
+# Default save location is user's home directory /.ollama_chat
+DEFAULT_SAVE_DIR = os.path.join(str(Path.home()), '.ollama_chat')
+SAVE_DIR = os.getenv('OLLAMA_CHAT_SAVE_DIR', DEFAULT_SAVE_DIR)
+
+# Create save directory if it doesn't exist
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Function to preprocess text for better display
 def preprocess_text(text):
@@ -114,17 +130,125 @@ class ModelListThread(QThread):
 def format_code_blocks(text):
     def replace_code_block(match):
         language = match.group(1) or ''
-        code = match.group(2)
-        formatted = f'''
-        <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 10px; border-radius: 5px; overflow-x: auto;">
-            <code class="language-{language}" style="color: #a9b7c6;">{code}</code>
-        </pre>
+        code = match.group(2).strip()
+        
+        # Regular code block with syntax highlighting
+        highlighted_code = syntax_highlight(code, language)
+        
+        return f'''
+        <div class="code-block">
+            <div class="code-header">
+                <span>{language}</span>
+            </div>
+            <pre><code>{highlighted_code}</code></pre>
+        </div>
         '''
-        return formatted
+
+    # First process code blocks
+    text = re.sub(r'```(\w+)?\n([\s\S]+?)\n```', replace_code_block, text)
     
-    # Find code blocks with language specification: ```python\ncode\n```
-    pattern = r'```(\w+)?\n([\s\S]+?)\n```'
-    return re.sub(pattern, replace_code_block, text)
+    # Then process other markdown elements
+    text = process_markdown(text)
+    
+    return text
+
+def process_markdown(text):
+    """Process non-code markdown elements"""
+    patterns = {
+        # Headers
+        r'^(#{1,6})\s(.+)$': lambda m: f'<h{len(m.group(1))} style="color: #BD93F9">{m.group(2)}</h{len(m.group(1))}>',
+        
+        # Bold
+        r'\*\*(.+?)\*\*': r'<strong style="color: #FFB86C">\1</strong>',
+        
+        # Italic
+        r'\*(.+?)\*': r'<em style="color: #F1FA8C">\1</em>',
+        
+        # Inline code
+        r'`([^`]+)`': r'<code style="background: #44475A; padding: 0.2em 0.4em; border-radius: 3px">\1</code>',
+        
+        # Lists
+        r'^\s*[-*]\s(.+)$': r'<li style="color: #F8F8F2">• \1</li>',
+        
+        # Links
+        r'\[([^\]]+)\]\(([^\)]+)\)': r'<a href="\2" style="color: #8BE9FD">\1</a>'
+    }
+    
+    for pattern, replacement in patterns.items():
+        text = re.sub(pattern, replacement, text, flags=re.MULTILINE)
+    
+    return text
+
+def syntax_highlight(code, language):
+    """Enhanced syntax highlighter with more language support"""
+    # Add language-specific syntax highlighting rules
+    languages = {
+        'python': {
+            'keywords': ['def', 'class', 'import', 'from', 'return', 'if', 'else', 'elif', 
+                        'for', 'while', 'try', 'except', 'with', 'as', 'lambda', 'yield'],
+            'builtins': ['print', 'len', 'str', 'int', 'float', 'list', 'dict', 'set', 'tuple'],
+            'string_color': '#F1FA8C',
+            'keyword_color': '#FF79C6',
+            'builtin_color': '#8BE9FD',
+            'number_color': '#BD93F9',
+            'comment_color': '#6272A4',
+        },
+        'javascript': {
+            'keywords': ['function', 'const', 'let', 'var', 'return', 'if', 'else', 
+                        'for', 'while', 'try', 'catch', 'class', 'extends'],
+            'builtins': ['console', 'document', 'window', 'Array', 'Object', 'String'],
+            'string_color': '#F1FA8C',
+            'keyword_color': '#FF79C6',
+            'builtin_color': '#8BE9FD',
+            'number_color': '#BD93F9',
+            'comment_color': '#6272A4',
+        }
+    }
+    
+    lang_rules = languages.get(language.lower(), languages['python'])
+    
+    # Apply syntax highlighting
+    highlighted = code
+    
+    # Highlight strings
+    highlighted = re.sub(
+        r'(".*?"|\'.*?\')', 
+        f'<span style="color: {lang_rules["string_color"]}">\\1</span>',
+        highlighted
+    )
+    
+    # Highlight comments
+    highlighted = re.sub(
+        r'(#.*?$|//.*?$)', 
+        f'<span style="color: {lang_rules["comment_color"]}">\\1</span>',
+        highlighted,
+        flags=re.MULTILINE
+    )
+    
+    # Highlight keywords
+    for keyword in lang_rules['keywords']:
+        highlighted = re.sub(
+            f'\\b({keyword})\\b',
+            f'<span style="color: {lang_rules["keyword_color"]}">\\1</span>',
+            highlighted
+        )
+    
+    # Highlight builtins
+    for builtin in lang_rules['builtins']:
+        highlighted = re.sub(
+            f'\\b({builtin})\\b',
+            f'<span style="color: {lang_rules["builtin_color"]}">\\1</span>',
+            highlighted
+        )
+    
+    # Highlight numbers
+    highlighted = re.sub(
+        r'\b(\d+)\b',
+        f'<span style="color: {lang_rules["number_color"]}">\\1</span>',
+        highlighted
+    )
+    
+    return highlighted
 
 class OllamaChatApp(QMainWindow):
     def __init__(self):
@@ -144,14 +268,10 @@ class OllamaChatApp(QMainWindow):
         self.fetch_models()
         
     def setup_fonts(self):
-        # Load and set up Arial font for better display
-        font_id = QFontDatabase.addApplicationFont("arial.ttf")
-        if font_id == -1:
-            print("Warning: Arial font not found. Using default font.")
-        # If Arial is not available, fall back to a system sans-serif font
-        self.app_font = QFont("Arial", 14)
+        # Remove the font loading attempt and just use system fonts
+        self.app_font = QFont("Arial", 18)
         self.app_font.setStyleHint(QFont.StyleHint.SansSerif)
-        self.heading_font = QFont("Arial", 20)
+        self.heading_font = QFont("Arial", 22)
         self.heading_font.setStyleHint(QFont.StyleHint.SansSerif)
         self.heading_font.setBold(True)
         
@@ -219,10 +339,33 @@ class OllamaChatApp(QMainWindow):
         self.typing_indicator.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         self.typing_indicator.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.typing_indicator.setVisible(False)  # Hidden by default
+
+        # Create stop button
+        self.stop_button = QPushButton("□")  # Square symbol
+        self.stop_button.setFixedSize(24, 24)  # Make it square
+        self.stop_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: 2px solid #ff0000;
+                border-radius: 4px;
+                color: #ff0000;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 0, 0, 0.1);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 0, 0, 0.2);
+            }
+        """)
+        self.stop_button.clicked.connect(self.stop_generation)
+        self.stop_button.setVisible(False)  # Hidden by default
+
         typing_layout.addStretch()
         typing_layout.addWidget(self.typing_indicator)
+        typing_layout.addWidget(self.stop_button)
         typing_layout.addStretch()
-        
+
         main_layout.addLayout(typing_layout)
         
         # Input area
@@ -256,15 +399,52 @@ class OllamaChatApp(QMainWindow):
         self.setWindowTitle("Ollama Glass Chat")
         self.setGeometry(300, 300, 900, 700)
         self.show()
+        self.model_combo.currentIndexChanged.connect(self.on_model_changed)
     
     def upload_file(self):
-        options = QFileDialog.Options()
-        file_path, _ = QFileDialog.getOpenFileName(self, "Upload File", "", "All Files (*);;Text Files (*.txt);;Python Files (*.py);;Markdown Files (*.md)", options=options)
+        """Upload and handle files, preserving existing prompt text"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Upload File",
+            "",
+            "All Files (*);;Images (*.png *.jpg *.jpeg);;Text Files (*.txt);;Python Files (*.py)"
+        )
+        
         if file_path:
             try:
-                with open(file_path, 'r') as file:
-                    file_content = file.read()
-                    self.add_user_message(f"Uploaded file content:\n\n```\n{file_content}\n```")
+                # Get current prompt text
+                current_prompt = self.prompt_input.text().strip()
+                
+                # Check if it's an image
+                is_image = file_path.lower().endswith(('.png', '.jpg', '.jpeg'))
+                
+                if is_image:
+                    # Special handling for images using llava format
+                    image_prompt = f"\n<image>{file_path}</image>"
+                    if current_prompt:
+                        # Combine existing prompt with image
+                        self.prompt_input.setText(f"{current_prompt}{image_prompt}")
+                    else:
+                        # Just add image if no prompt exists
+                        self.prompt_input.setText(f"Describe this image:{image_prompt}")
+                else:
+                    # Handle text files
+                    with open(file_path, 'r') as file:
+                        file_content = file.read()
+                        file_ext = Path(file_path).suffix[1:]
+                        
+                        # Format file content as code block
+                        formatted_content = f"\n```{file_ext}\n{file_content}\n```"
+                        
+                        if current_prompt:
+                            # Combine existing prompt with file content
+                            self.prompt_input.setText(f"{current_prompt}\nHere's the file content:{formatted_content}")
+                        else:
+                            # Just add file content if no prompt exists
+                            self.prompt_input.setText(f"Analyze this code:{formatted_content}")
+                
+                self.prompt_input.setFocus()
+                
             except Exception as e:
                 self.add_system_message(f"Error reading file: {str(e)}")
     
@@ -289,17 +469,28 @@ class OllamaChatApp(QMainWindow):
             self.typing_dots += 1
     
     def show_typing_indicator(self):
-        """Show the typing indicator and start animation"""
+        """Show the typing indicator and stop button, start animation"""
         self.is_typing = True
         self.typing_indicator.setVisible(True)
+        self.stop_button.setVisible(True)  # Show stop button
         self.typing_dots = 0
-        self.typing_timer.start(150)  # Update every 150ms for smooth animation
-    
+        self.typing_timer.start(150)
+
     def hide_typing_indicator(self):
-        """Hide the typing indicator and stop animation"""
+        """Hide the typing indicator and stop button, stop animation"""
         self.is_typing = False
         self.typing_indicator.setVisible(False)
+        self.stop_button.setVisible(False)  # Hide stop button
         self.typing_timer.stop()
+
+    def stop_generation(self):
+        """Stop the current generation"""
+        if hasattr(self, 'ollama_thread') and self.ollama_thread.isRunning():
+            self.ollama_thread.terminate()  # Force stop the thread
+            self.ollama_thread.wait()  # Wait for thread to finish
+            self.clean_thread(self.ollama_thread)
+            self.hide_typing_indicator()
+            self.add_system_message("Generation stopped by user")
         
     def apply_theme(self):
         # Apply theme based on current mode
@@ -481,13 +672,37 @@ class OllamaChatApp(QMainWindow):
         event.accept()
     
     def fetch_models(self):
+        """Refresh model list while preserving current selection"""
+        current_model = self.model_combo.currentText()  # Store current selection
+        
         self.model_combo.clear()
         self.model_combo.addItem("Loading models...")
         self.model_combo.setEnabled(False)
         self.send_button.setEnabled(False)
         
+        # Clear the chat display
+        self.messages = []
+        self.message_counter = 0
+        self.refresh_chat_display()
+        
+        def on_models_loaded(models):
+            self.model_combo.clear()
+            if models:
+                self.model_combo.addItems(models)
+                # Try to restore previous selection
+                if current_model in models:
+                    index = self.model_combo.findText(current_model)
+                    self.model_combo.setCurrentIndex(index)
+                self.model_combo.setEnabled(True)
+                self.send_button.setEnabled(True)
+                selected_model = self.model_combo.currentText()
+                self.add_system_message(f"Models refreshed. Using <b>{selected_model}</b>")
+            else:
+                self.model_combo.addItem("No models found")
+                self.add_system_message("No models found. Please pull a model using 'ollama pull <model>' command.")
+        
         self.model_thread = ModelListThread()
-        self.model_thread.models_signal.connect(self.update_model_list)
+        self.model_thread.models_signal.connect(on_models_loaded)
         self.model_thread.error_signal.connect(self.show_model_error)
         self.model_thread.finished.connect(lambda: self.clean_thread(self.model_thread))
         self.active_threads.append(self.model_thread)
@@ -498,33 +713,11 @@ class OllamaChatApp(QMainWindow):
         if models:
             self.model_combo.addItems(models)
             self.model_combo.setCurrentIndex(0)
-            
-            # Add system message about available models
-            system_message = {
-                "id": f"system-{self.message_counter}",
-                "type": "system",
-                "content": "<b>Available models:</b><ul>"
-            }
-            self.message_counter += 1
-            
-            for model_name in models:
-                system_message["content"] += f"<li><code>{model_name}</code></li>"
-            system_message["content"] += "</ul>"
-            
-            self.messages.append(system_message)
-            self.refresh_chat_display()
+            selected_model = self.model_combo.currentText()
+            self.add_system_message(f"Ready to chat using <b>{selected_model}</b>. Type /help for available commands.")
         else:
             self.model_combo.addItem("No models found")
-            
-            # Add system message about no models
-            system_message = {
-                "id": f"system-{self.message_counter}",
-                "type": "system",
-                "content": "No models found. Please pull a model using 'ollama pull &lt;model&gt;' command."
-            }
-            self.message_counter += 1
-            self.messages.append(system_message)
-            self.refresh_chat_display()
+            self.add_system_message("No models found. Please pull a model using 'ollama pull <model>' command.")
         
         self.model_combo.setEnabled(True)
         self.send_button.setEnabled(True)
@@ -589,181 +782,367 @@ class OllamaChatApp(QMainWindow):
                 break
     
     def refresh_chat_display(self):
-        # Clear display and rebuild it from our message list
-        self.chat_display.clear()
-        
-        # Add welcome message if this is first load
-        if not self.messages:
-            welcome_html = """
-            <div style="padding: 15px; margin: 10px 0; border-radius: 8px; background-color: rgba(150, 150, 150, 0.1);">
-                <h2>Welcome to Ollama Glass Chat!</h2>
-                <p>Select a model and start chatting. You can use Markdown in your messages for formatting.</p>
-                <p><b>Available commands:</b></p>
-                <ul>
-                    <li><code>/help</code> - Show this help message</li>
-                    <li><code>/list</code> - Refresh the model list</li>
-                    <li><code>/swap &lt;model&gt;</code> - Switch to a different model</li>
-                    <li><code>/clear</code> - Clear the chat history</li>
-                </ul>
-            </div>
-            """
-            self.chat_display.setHtml(welcome_html)
-            return
-        
-        # Build HTML for all messages
-        chat_html = ""
+        chat_html = """
+        <style>
+            .message-container {
+                padding: 15px;
+                margin: 10px 0;
+                border-radius: 8px;
+            }
+            
+            .user-message {
+                background-color: rgba(68, 71, 90, 0.3);
+                border-left: 3px solid #BD93F9;
+            }
+            
+            .assistant-message {
+                background-color: rgba(40, 42, 54, 0.3);
+                border-left: 3px solid #50FA7B;
+            }
+            
+            .system-message {
+                background-color: rgba(68, 71, 90, 0.2);
+                color: #6272A4;
+            }
+            
+            .message-header {
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #F8F8F2;
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            .message-content {
+                color: #F8F8F2;
+                line-height: 1.5;
+            }
+            
+            .code-block {
+                margin: 10px 0;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 1px solid #444;
+            }
+            
+            .code-header {
+                background-color: #343746;
+                padding: 8px 15px;
+                color: #f8f8f2;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            pre {
+                background-color: #282A36;
+                color: #f8f8f2;
+                padding: 15px;
+                margin: 0;
+                overflow-x: auto;
+                font-family: 'Consolas', 'Monaco', monospace;
+            }
+            
+            code {
+                font-family: 'Consolas', 'Monaco', monospace;
+                color: #f8f8f2;
+            }
+            
+            .copy-button {
+                color: #6272A4;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 4px;
+                background: rgba(255,255,255,0.1);
+                border: none;
+                font-size: 0.9em;
+            }
+        </style>
+        """
+
         for message in self.messages:
+            message_id = f"msg-{message['id']}"
+            
             if message["type"] == "system":
-                # System message style - subtle background
-                bg_color = "rgba(150, 150, 150, 0.1)" 
-                text_color = "#555555" if not self.is_dark_mode else "#cccccc"
-                
                 chat_html += f"""
-                <div style="padding: 15px; margin: 10px 0; border-radius: 8px; background-color: {bg_color}; color: {text_color};">
-                    {message["content"]}
+                <div class="message-container system-message" id="{message_id}">
+                    <div class="message-header">System</div>
+                    <div class="message-content">{message["content"]}</div>
                 </div>
                 """
             
             elif message["type"] == "user":
-                # User message style - light or dark based on theme
-                bg_color = "rgba(220, 220, 220, 0.2)" if not self.is_dark_mode else "rgba(60, 60, 60, 0.3)"
-                border_color = "#cccccc" if not self.is_dark_mode else "#555555"
-                
                 chat_html += f"""
-                <div style="padding: 15px; margin: 10px 0; border-radius: 8px; 
-                            background-color: {bg_color}; border-left: 3px solid {border_color};">
-                    <div style="font-weight: bold; margin-bottom: 5px;">You:</div>
-                    <div>{message["content"]}</div>
+                <div class="message-container user-message" id="{message_id}">
+                    <div class="message-header">You</div>
+                    <div class="message-content">{format_code_blocks(message["content"])}</div>
                 </div>
                 """
             
             elif message["type"] == "assistant":
-                # Assistant message style - with model name
-                bg_color = "rgba(240, 240, 240, 0.3)" if not self.is_dark_mode else "rgba(40, 40, 40, 0.3)"
-                border_color = "#aaaaaa" if not self.is_dark_mode else "#666666"
-                
-                # Format code blocks
-                formatted_content = format_code_blocks(message["content"])
-                
                 chat_html += f"""
-                <div style="padding: 15px; margin: 10px 0; border-radius: 8px; 
-                            background-color: {bg_color}; border-left: 3px solid {border_color};">
-                    <div style="font-weight: bold; margin-bottom: 5px;">Ollama ({message["model"]}):</div>
-                    <div>{formatted_content}</div>
+                <div class="message-container assistant-message" id="{message_id}">
+                    <div class="message-header">Ollama ({message["model"]})</div>
+                    <div class="message-content">{format_code_blocks(message["content"])}</div>
                 </div>
                 """
-        
-        # Update display
+
         self.chat_display.setHtml(chat_html)
         
-        # Auto scroll to bottom
-        self.chat_display.verticalScrollBar().setValue(
-            self.chat_display.verticalScrollBar().maximum()
-        )
+        # Scroll to bottom
+        scrollbar = self.chat_display.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
     
     def send_prompt(self):
         prompt = self.prompt_input.text().strip()
         if not prompt:
             return
-        
-        # Clear input field
-        self.prompt_input.clear()
-        
-        # Disable input while processing
-        self.prompt_input.setEnabled(False)
-        self.send_button.setEnabled(False)
-        
-        # Handle commands
+            
+        # Handle commands first
         if prompt.startswith('/'):
-            if prompt.startswith('/help'):
-                # Show help message
+            self.prompt_input.clear()
+            self.prompt_input.setFocus()
+            
+            if prompt == '/help':
                 help_html = """
-                <h3>Available Commands:</h3>
-                <ul>
-                    <li><code>/help</code> - Show this help message</li>
-                    <li><code>/list</code> - Refresh the model list</li>
-                    <li><code>/swap &lt;model&gt;</code> - Switch to a different model</li>
-                    <li><code>/clear</code> - Clear the chat history</li>
-                </ul>
+                <div style="padding: 15px; margin: 10px 0; border-radius: 8px; background-color: rgba(150, 150, 150, 0.1);">
+                    <h3>Available Commands:</h3>
+                    <ul>
+                        <li><code>/help</code> - Show this help message</li>
+                        <li><code>/models</code> - Refresh available models</li>
+                        <li><code>/clear</code> - Clear chat history</li>
+                        <li><code>/save [name]</code> - Save conversation</li>
+                        <li><code>/load [name]</code> - Load saved conversation</li>
+                        <li><code>/list</code> - List saved conversations</li>
+                        <li><code>/swap [model]</code> - Switch to different model</li>
+                    </ul>
+                </div>
                 """
                 self.add_system_message(help_html)
                 return
                 
-            elif prompt.startswith('/list') or prompt.startswith('/ollama list'):
-                # Refresh model list
-                self.add_system_message("<p>Refreshing model list...</p>")
+            elif prompt == '/models':
                 self.fetch_models()
                 return
                 
             elif prompt == '/clear':
-                # Clear chat history
                 self.messages = []
-                welcome_html = """
-                <p>Chat history cleared.</p>
-                <p><b>Available commands:</b> /help, /list, /swap &lt;model&gt;, /clear</p>
-                """
-                self.add_system_message(welcome_html)
+                self.message_counter = 0
+                self.refresh_chat_display()
                 return
                 
-            elif prompt.startswith('/swap '):
-                # Switch to a different model
-                # First, wait for any ongoing requests to complete
-                for thread in self.active_threads:
-                    if isinstance(thread, OllamaThread):
-                        thread.wait()
+            elif prompt.startswith('/save'):
+                name = prompt.replace('/save', '').strip()
+                self.save_conversation(name if name else None)
+                return
                 
-                model_name = prompt.split('/swap ', 1)[1].strip()
-                
-                # Try exact match first
-                index = self.model_combo.findText(model_name)
-                
-                # If not found, try partial match
-                if index == -1:
-                    for i in range(self.model_combo.count()):
-                        item_text = self.model_combo.itemText(i)
-                        if model_name.lower() in item_text.lower():
-                            index = i
-                            break
-                
-                if index != -1:
-                    self.model_combo.setCurrentIndex(index)
-                    current_model = self.model_combo.currentText()
-                    self.add_system_message(f"<p>Switched to model: <b>{current_model}</b></p>")
+            elif prompt.startswith('/load'):
+                name = prompt.replace('/load', '').strip()
+                if name:
+                    self.load_conversation(name)
                 else:
-                    self.add_system_message(f"<p>Model '{model_name}' not found. Use /list to see available models.</p>")
+                    self.add_system_message("Please specify a conversation name to load")
                 return
                 
-            # If it's an unknown command, treat it as a regular message
-        
-        # Regular message processing (not a command)
+            elif prompt == '/list':
+                self.list_conversations()
+                return
+                
+            elif prompt.startswith('/swap'):
+                model_name = prompt.replace('/swap', '').strip()
+                if model_name:
+                    index = self.model_combo.findText(model_name)
+                    if index >= 0:
+                        self.model_combo.setCurrentIndex(index)
+                        self.add_system_message(f"Switched to model: {model_name}")
+                    else:
+                        self.add_system_message(f"Model '{model_name}' not found")
+                return
+
+            elif prompt.startswith('/embed'):
+                model = prompt.replace('/embed', '').strip()
+                if not model:
+                    model = 'nomic-embed-text'  # default model
+                self.setup_embedding(model)
+                return
+
+            elif prompt.startswith('/search'):
+                query = prompt.replace('/search', '').strip()
+                if query:
+                    self.search_conversations(query)
+                else:
+                    self.add_system_message("Please provide a search query")
+                return
+
+            else:
+                self.add_system_message(f"Unknown command: {prompt}")
+                return
+
+        # Handle regular message to Ollama
         selected_model = self.model_combo.currentText()
         if selected_model in ["Loading models...", "No models found", "Error loading models"]:
-            QMessageBox.warning(self, "Model Selection", "Please select a valid model first.")
+            self.add_system_message("Please select a valid model first")
             return
-            
-        # Display user message
+
+        # Clear input and add user message
+        self.prompt_input.clear()
         self.add_user_message(prompt)
         
-        # Create assistant message and get its ID for updating
+        # Create assistant message and get its ID
         message_id = self.add_assistant_message(selected_model)
         
-        # Start thread for API call
+        # Show typing indicator
+        self.show_typing_indicator()
+        
+        # Stop any existing generation
+        if hasattr(self, 'ollama_thread') and self.ollama_thread.isRunning():
+            self.ollama_thread.terminate()
+            self.ollama_thread.wait()
+            self.clean_thread(self.ollama_thread)
+
+        # Create and start Ollama thread
         self.ollama_thread = OllamaThread(prompt, selected_model)
-        
-        # Connect signals to update the specific message
-        self.ollama_thread.start_signal.connect(self.show_typing_indicator)
-        self.ollama_thread.response_signal.connect(lambda chunk: self.update_assistant_message(message_id, chunk))
-        self.ollama_thread.error_signal.connect(lambda error: self.update_assistant_message(message_id, f"<span style='color: red;'>{error}</span>"))
-        
-        # Clean up when done
+        self.ollama_thread.response_signal.connect(
+            lambda content: self.update_assistant_message(message_id, content)
+        )
+        self.ollama_thread.error_signal.connect(
+            lambda error: self.add_system_message(f"Error: {error}")
+        )
         self.ollama_thread.complete_signal.connect(self.hide_typing_indicator)
-        self.ollama_thread.finished.connect(lambda: self.clean_thread(self.ollama_thread))
-        self.ollama_thread.finished.connect(lambda: self.prompt_input.setEnabled(True))
-        self.ollama_thread.finished.connect(lambda: self.send_button.setEnabled(True))
+        self.ollama_thread.finished.connect(
+            lambda: self.clean_thread(self.ollama_thread)
+        )
         
         self.active_threads.append(self.ollama_thread)
         self.ollama_thread.start()
 
+    def save_conversation(self, name=None):
+        """Save current conversation to parquet file"""
+        if not name:
+            name = f"conversation_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Convert messages to DataFrame
+        df = pd.DataFrame(self.messages)
+        
+        # Add embeddings if enabled
+        if hasattr(self, 'embedding_model'):
+            df['embedding'] = df['content'].apply(
+                lambda x: ollama.embed(model=self.embedding_model, input=x)['embedding']
+            )
+        
+        # Save to parquet
+        save_path = os.path.join(SAVE_DIR, f"{name}.parquet")
+        df.to_parquet(save_path)
+        self.add_system_message(f"Conversation saved as: {name}")
+
+    def load_conversation(self, name):
+        """Load conversation from parquet file"""
+        try:
+            load_path = os.path.join(SAVE_DIR, f"{name}.parquet")
+            if not os.path.exists(load_path):
+                self.add_system_message(f"Conversation file not found: {name}")
+                return
+                
+            df = pd.read_parquet(load_path)
+            
+            # Convert DataFrame back to message format
+            messages = []
+            for _, row in df.iterrows():
+                message = {
+                    "id": f"{row['type']}-{len(messages)}",
+                    "type": row['type'],
+                    "content": row['content']
+                }
+                if row['type'] == 'assistant':
+                    message['model'] = row.get('model', 'unknown')
+                messages.append(message)
+                
+            self.messages = messages
+            self.message_counter = len(messages)
+            self.refresh_chat_display()
+            self.add_system_message(f"Loaded conversation: {name}")
+            
+        except Exception as e:
+            self.add_system_message(f"Error loading conversation: {str(e)}")
+
+    def list_conversations(self):
+        """List all saved conversations"""
+        files = [f.stem for f in Path(SAVE_DIR).glob("*.parquet")]
+        if files:
+            msg = "<b>Saved conversations:</b><ul>"
+            for f in files:
+                msg += f"<li>{f}</li>"
+            msg += "</ul>"
+        else:
+            msg = "No saved conversations found"
+        self.add_system_message(msg)
+
+    def setup_embedding(self, model='nomic-embed-text'):
+        """Setup embedding model"""
+        self.embedding_model = model
+        # Create embeddings collection if needed
+        if not hasattr(self, 'embeddings_db'):
+            self.embeddings_db = []
+        self.add_system_message(f"Embedding model set to: {model}")
+
+    def create_embedding(self, text):
+        """Create embedding for text using current model"""
+        if hasattr(self, 'embedding_model'):
+            try:
+                embedding = ollama.embed(model=self.embedding_model, input=text)
+                return embedding['embedding']
+            except Exception as e:
+                print(f"Error creating embedding: {e}")
+        return None
+
+    def search_conversations(self, query, k=3):
+        """Search through saved conversations using embeddings"""
+        if not hasattr(self, 'embedding_model'):
+            self.add_system_message("Please set up embedding model first using /embed command")
+            return
+            
+        query_embedding = ollama.embed(model=self.embedding_model, input=query)['embedding']
+        
+        results = []
+        for f in Path(SAVE_DIR).glob("*.parquet"):
+            df = pd.read_parquet(f)
+            if 'embedding' in df.columns:
+                for _, row in df.iterrows():
+                    if 'embedding' in row:
+                        similarity = np.dot(query_embedding, row['embedding'])
+                        results.append((similarity, row['content'], f.stem))
+        
+        results.sort(reverse=True)
+        
+        msg = f"<b>Top {k} results for: '{query}'</b><br><br>"
+        for sim, content, conv in results[:k]:
+            msg += f"<b>From {conv}</b> (similarity: {sim:.2f})<br>{content}<br><br>"
+        
+        self.add_system_message(msg)
+
+    def on_model_changed(self, index):
+        """Handle model selection changes"""
+        if index >= 0:  # Ensure valid index
+            selected_model = self.model_combo.itemText(index)
+            if selected_model not in ["Loading models...", "No models found", "Error loading models"]:
+                self.messages = []  # Clear chat history
+                self.message_counter = 0
+                self.refresh_chat_display()
+                self.add_system_message(f"Switched to model: <b>{selected_model}</b>")
+
+    def store_conversation_chunk(self, messages, chunk_size=3):
+        """Store conversation chunk to parquet with embeddings"""
+        df = pd.DataFrame(messages[-chunk_size:])  # Only store last N messages
+        
+        if hasattr(self, 'embedding_model'):
+            df['embedding'] = df['content'].apply(
+                lambda x: ollama.embed(model=self.embedding_model, input=x)['embedding']
+            )
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        chunk_path = os.path.join(SAVE_DIR, f"chunk_{timestamp}.parquet")
+        df.to_parquet(chunk_path)
+        return chunk_path
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
