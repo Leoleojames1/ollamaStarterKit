@@ -82,8 +82,12 @@ python ollama101.py
 
 ### Agent Chef (Beta)
 
-![Agent Chef](https://placehold.co/600x400?text=Agent+Chef)
-
+<p align="center">
+  <img src="assets/agentChefBeta_md1.png" alt="OARC LOGO" width="250"/>
+</p>
+<p align="center">
+  <img src="assets/agentChefBeta_md2.png" alt="OARC LOGO" width="250"/>
+</p>
 A specialized tool for generating AI training data from research papers on arXiv.
 
 #### Features:
