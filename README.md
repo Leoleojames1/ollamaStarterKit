@@ -53,7 +53,9 @@ ollama pull phi3
 ollama pull granite3.2-vision
 ```
 
-you can also explore ollama to your hearts content to find the perfect model from their vast collection: [Borch's Ollama](https://ollama.com/borch)
+you can also explore ollama to your hearts content to find the perfect model from their vast collection: 
+
+[Borch's Ollama](https://ollama.com/borch)
 
 ## Tools
 
