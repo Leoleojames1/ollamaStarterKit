@@ -59,7 +59,7 @@ you can also explore ollama to your hearts content to find the perfect model fro
 
 ### Ollama 101
 
-![ollamaStarterKit](assets/ollama101_md1.png)
+[ollamaStarterKit](assets/ollama101_md1.png)
 
 A clean, user-friendly chat interface for interacting with Ollama models.
 
