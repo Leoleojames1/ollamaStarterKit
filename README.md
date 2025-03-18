@@ -86,6 +86,10 @@ you can also explore ollama to your hearts content to find the perfect model fro
 
 [Borch's Ollama](https://ollama.com/borch)
 
+and check out this ollama pypi package notebook I made for you all as well:
+
+[Ollama101 Notebook](https://github.com/Leoleojames1/ollamaStarterKit/blob/master/notebooks/ollama101.ipynb)
+
 ## Tools
 
 ### Ollama 101
