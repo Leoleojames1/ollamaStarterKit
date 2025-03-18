@@ -18,6 +18,7 @@ ollamaQT Toolbox provides desktop applications for working with Ollama's local L
 2. **Agent Chef** - A tool for generating AI training data from arixv research papers, starts by scraping paper data, then compiles various types of data, currently only has one mode for the beta, next version will add the enhancements that are in the original [Agent_Chef](https://github.com/Leoleojames1/Agent_Chef).
 
 ***OTHER TOOLS COMING SOON***
+
 3. **Groq UI** - (demo finished, main version unfinished) a simple groq inference example with pyqt6, to become a more advanced GroqUI.
 4. **GROQ & OLLAMA MERGED text 2 image & image 2 text Annotator ** - (unfinished) allows for simple image dataset annotation.
 5. **Yolo101** - (obb notebook finished, simple ui, not finished, connection to gesturebox also not finished) A simple notebook for YoloV11 Obb, Pose, and Segmentation models, as well as a pyqt6 inference UI, and some other inference examples.
