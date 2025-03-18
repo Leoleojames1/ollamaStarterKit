@@ -28,22 +28,22 @@ Both tools feature modern, responsive interfaces with dark/light mode support an
 
 ## Installation
 
-0. Make sure to either use miniconda, or create a pyenv.
+```
+1. Clone the repository:
+```bash
+git clone https://github.com/Leoleojames1/ollamaStarterKit.git
+cd ollamaStarterKit/
+```
+
+2. Make sure to either use miniconda, or create a pyenv.
 [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install) or [pyenv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
 
 Skip the following commands if you have miniconda:
 ```bash
-# create the env by executing the command:
+# create the env by executing the following command, MAKE SURE YOU ARE IN THE OLLAMASTARTERKIT PROJECT FOLDER:
 py -m venv .venv
 # activate the env with the following command:
 .venv\Scripts\activate
-
-```
-2. Clone the repository:
-```bash
-git clone https://github.com/Leoleojames1/ollamaStarterKit.git
-cd ollamaStarterKit/src/ollama101/
-```
 
 2. Install the required dependencies in env, use conda or activated pyEnv:
 ```bash
@@ -69,6 +69,7 @@ ollama pull granite3.2-vision
 5. Start the ollama101 UI:
 ```bash
 # ensure the conda or pyenv is still activated, and start the pyqt6 windowed ollama app:
+cd ollamaStarterKit/src/ollama101/
 python ollama101ui.py
 ```
 
@@ -101,6 +102,8 @@ A clean, user-friendly chat interface for interacting with Ollama models.
 #### Usage:
 
 ```bash
+# activate your venv as specified in the beginning
+cd ollamaStarterKit/src/ollama101/
 python ollama101.py
 ```
 
@@ -126,6 +129,8 @@ A specialized tool for generating AI training data from research papers on arXiv
 #### Usage:
 
 ```bash
+# activate your venv as specified in the beginning
+cd ollamaStarterKit/src/agentCheftBeta/
 python agentChefBeta.py
 ```
 
@@ -153,7 +158,11 @@ The project is structured with separate Python files for each tool:
 
 - `ollama101.py` - The chat interface application
 - `agentChefBeta.py` - The training data generation tool
-
+- `groqChat.py` - A simple groq chatbot pyqt6 ui. Very simple, just an example.
+- `groqImageAnnotation.py` - (unfinished) A simple image annotator with vision models for text 2 image & image 2 text training data
+- `huggingFaceHub.py - (unfinished) A simple ui for hugging face hub api interaction and model management
+- `yolo101` - (unfinished) A simple yoloV11 OBB, Segment, and Pose notebook and inference ui.
+  
 ### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
