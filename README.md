@@ -19,10 +19,10 @@ ollamaQT Toolbox provides desktop applications for working with Ollama's local L
 
 ***OTHER TOOLS COMING SOON***
 
-3. **Groq UI** - (demo finished, main version unfinished) a simple groq inference example with pyqt6, to become a more advanced GroqUI.
+3. **GroqUI & notebooks** - (demo finished, main version unfinished) a simple groq inference example with pyqt6, to become a more advanced GroqUI.
 4. **GROQ & OLLAMA MERGED text 2 image & image 2 text Annotator** - (unfinished) allows for simple image dataset annotation.
-5. **Yolo101** - (obb notebook finished, simple ui, not finished, connection to gesturebox also not finished) A simple notebook for YoloV11 Obb, Pose, and Segmentation models, as well as a pyqt6 inference UI, and some other inference examples.
-6. **huggingFaceHub.py** - (unfinished) A simple ui for hugging face hub api interaction and model management
+5. **YoloUI & notebooks** - (obb notebook finished, simple ui, not finished, connection to gesturebox also not finished) A simple notebook for YoloV11 Obb, Pose, and Segmentation models, as well as a pyqt6 inference UI, and some other inference examples.
+6. **HuggingFaceUI & notebooks** - (unfinished) A simple ui for hugging face hub api interaction and model management
 
 Both tools feature modern, responsive interfaces with dark/light mode support and are designed to make working with local LLMs more accessible.
 
