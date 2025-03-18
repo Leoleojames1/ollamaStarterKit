@@ -20,8 +20,9 @@ ollamaQT Toolbox provides desktop applications for working with Ollama's local L
 ***OTHER TOOLS COMING SOON***
 
 3. **Groq UI** - (demo finished, main version unfinished) a simple groq inference example with pyqt6, to become a more advanced GroqUI.
-4. **GROQ & OLLAMA MERGED text 2 image & image 2 text Annotator ** - (unfinished) allows for simple image dataset annotation.
+4. **GROQ & OLLAMA MERGED text 2 image & image 2 text Annotator** - (unfinished) allows for simple image dataset annotation.
 5. **Yolo101** - (obb notebook finished, simple ui, not finished, connection to gesturebox also not finished) A simple notebook for YoloV11 Obb, Pose, and Segmentation models, as well as a pyqt6 inference UI, and some other inference examples.
+6. **huggingFaceHub.py** - (unfinished) A simple ui for hugging face hub api interaction and model management
 
 Both tools feature modern, responsive interfaces with dark/light mode support and are designed to make working with local LLMs more accessible.
 
@@ -166,8 +167,8 @@ The project is structured with separate Python files for each tool:
 - `agentChefBeta.py` - The training data generation tool
 - `groqChat.py` - A simple groq chatbot pyqt6 ui. Very simple, just an example.
 - `groqImageAnnotation.py` - (unfinished) A simple image annotator with vision models for text 2 image & image 2 text training data
-- `huggingFaceHub.py - (unfinished) A simple ui for hugging face hub api interaction and model management
-- `yolo101` - (unfinished) A simple yoloV11 OBB, Segment, and Pose notebook and inference ui.
+- `huggingFaceHub.py' - (unfinished) A simple ui for hugging face hub api interaction and model management
+- `yolo101.ipynb` - (unfinished) A simple yoloV11 OBB, Segment, and Pose notebook and inference ui.
   
 ### Contributing
 
