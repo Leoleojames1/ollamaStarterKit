@@ -56,6 +56,8 @@ py -m venv .venv
 ```bash
 conda create -n ollamaStarterKit python=3.11
 conda activate ollamaStarterKit
+
+# or skip the conda commands and go straight to installing the requirements.txt if you dont have conda
 pip install -r requirements.txt
 ```
 
