@@ -51,8 +51,9 @@ Skip the following commands if you have miniconda:
 py -m venv .venv
 # activate the env with the following command:
 .venv\Scripts\activate
+```
 
-2. Install the required dependencies in env, use conda or activated pyEnv:
+3. Install the required dependencies in env, use conda or activated pyEnv:
 ```bash
 conda create -n ollamaStarterKit python=3.11
 conda activate ollamaStarterKit
