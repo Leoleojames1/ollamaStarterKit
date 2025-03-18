@@ -35,7 +35,6 @@ Both tools feature modern, responsive interfaces with dark/light mode support an
 
 ## Installation
 
-```
 1. Clone the repository:
 ```bash
 git clone https://github.com/Leoleojames1/ollamaStarterKit.git
