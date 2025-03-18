@@ -28,29 +28,48 @@ Both tools feature modern, responsive interfaces with dark/light mode support an
 
 ## Installation
 
-1. Clone the repository:
+0. Make sure to either use miniconda, or create a pyenv.
+[Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install) or [pyenv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
+
+Skip the following commands if you have miniconda:
+```bash
+# create the env by executing the command:
+py -m venv .venv
+# activate the env with the following command:
+.venv\Scripts\activate
+
+```
+2. Clone the repository:
 ```bash
 git clone https://github.com/Leoleojames1/ollamaStarterKit.git
-cd ollamaStarterKit
+cd ollamaStarterKit/src/ollama101/
 ```
 
-2. Install the required dependencies:
+2. Install the required dependencies in env, use conda or activated pyEnv:
 ```bash
+conda create -n ollamaStarterKit python=3.11
+conda activate ollamaStarterKit
 pip install -r requirements.txt
 ```
 
-3. Make sure Ollama is installed and running:
+3. Make sure Ollama is installed and running in one terminal instance:
 ```bash
 ollama serve
 ```
 
-4. In a separate terminal, pull your desired Ollama models:
+4. In a separate terminal instance, pull your desired Ollama models:
 ```bash
 ollama pull llama3
 ollama pull llama3.1
 ollama pull mistral
 ollama pull phi3
 ollama pull granite3.2-vision
+```
+
+5. Start the ollama101 UI:
+```bash
+# ensure the conda or pyenv is still activated, and start the pyqt6 windowed ollama app:
+python ollama101ui.py
 ```
 
 you can also explore ollama to your hearts content to find the perfect model from their vast collection: 
