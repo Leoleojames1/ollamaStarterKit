@@ -10,6 +10,10 @@
 
 A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
 
+<p align="center">
+  <img src="assets/mixStarterkit.png" alt="mixToolsPic" width="750"/>
+</p>
+
 ## Overview
 
 ollamaQT Toolbox provides desktop applications for working with Ollama's local LLM models:
