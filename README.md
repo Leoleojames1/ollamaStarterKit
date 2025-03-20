@@ -8,7 +8,7 @@
 
 # ollamaStarterKit
 
-A collection of Python GUI tools for working with Ollama models, some built with PyQt6, and others built with gradio.
+A collection of Python GUI tools for working with Ollama  & Groq models, some built with PyQt6, and others built with gradio.
 
 <p align="center">
   <img src="assets/mixStarterkit.png" alt="mixToolsPic" width="750"/>
@@ -16,7 +16,7 @@ A collection of Python GUI tools for working with Ollama models, some built with
 
 ## Overview
 
-ollamaQT Toolbox provides desktop applications for working with Ollama's local LLM models:
+ollamaStarterKit Toolbox provides several desktop applications for working with Ollama & Groq in chatbot and agentic environments:
 
 1. **Ollama 101** - A sleek chat interface for interacting with Ollama models, allows model swaping, conversation history, code rendering.
 2. **Agent Chef** - A tool for generating AI training data from arixv research papers, starts by scraping paper data, then compiles various types of data, currently only has one mode for the beta, next version will add the enhancements that are in the original [Agent_Chef](https://github.com/Leoleojames1/Agent_Chef).
