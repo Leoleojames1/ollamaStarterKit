@@ -10,10 +10,6 @@
 
 A collection of Python GUI tools for working with Ollama  & Groq models, some built with PyQt6, and others built with gradio.
 
-<p align="center">
-  <img src="assets/mixStarterkit.png" alt="mixToolsPic" width="750"/>
-</p>
-
 ## Overview
 
 ollamaStarterKit Toolbox provides several desktop applications for working with Ollama & Groq in chatbot and agentic environments:
